@@ -12,11 +12,38 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        createMediaPlayerBar()
+        listeners()
     }
 
+
+    private fun listeners() {
+        btn_create_bar.setOnClickListener {
+            createMediaPlayerBar()
+        }
+    }
+
+    /**
+     * Create Simple Bar Song
+     */
     private fun createMediaPlayerBar() {
-        val song = TrackSound(name = "Bohemian Rhapsody", url = "http://hcmaslov.d-real.sci-nnov.ru/public/mp3/Queen/Queen%20'Bohemian%20Rhapsody'.mp3")
-        layout_test.addView(MusicPlayerBar(context = this, song = song))
+        val song = TrackSound(name = et_name.text.toString(), url = et_url.text.toString())
+        layout_test.addView(MusicPlayerBar(context = this, song = song) {
+            stopMusic(layout_test.indexOfChild(it)) //Stop others bar
+        })
+    }
+
+    /**
+     * Stop all songs
+     * index:Int skip index song
+     */
+    private fun stopMusic(index: Int = -1) {
+        (0 until layout_test.childCount)
+                .filter { it != index }
+                .forEach { (layout_test.getChildAt(it) as MusicPlayerBar).stopMusic() }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopMusic()
     }
 }

@@ -24,18 +24,20 @@ class MusicPlayerBar : RelativeLayout {
 
     private var mCancel = false
 
-    private var listener: (() -> Unit)? = null
+    private var songLoad = false
+
+    private var listener: ((MusicPlayerBar) -> Unit)? = null
 
     constructor(context: Context) : super(context) {
         init()
     }
 
-    constructor(context: Context, song: TrackSound): super(context){
+    constructor(context: Context, song: TrackSound) : super(context) {
         init()
         config(song)
     }
 
-    constructor(context: Context, song: TrackSound, listener: () -> Unit) : super(context) {
+    constructor(context: Context, song: TrackSound, listener: (MusicPlayerBar) -> Unit) : super(context) {
         init()
         this.listener = listener
         config(song)
@@ -55,7 +57,7 @@ class MusicPlayerBar : RelativeLayout {
 
     private fun config(song: TrackSound) {
         btn_play_pause.setOnClickListener {
-            listener?.invoke()
+            listener?.invoke(this@MusicPlayerBar)
             onClickPlayLogic(song.url)
         }
         song_name.text = song.name
@@ -83,7 +85,11 @@ class MusicPlayerBar : RelativeLayout {
     }
 
     private fun onClickPlayLogic(url: String) {
-        loadSongAndPrepare(url)
+        if (!songLoad) {
+            loadSongAndPrepare(url)
+        } else {
+            logicPlay()
+        }
         logicSongCompleted()
     }
 
@@ -95,6 +101,7 @@ class MusicPlayerBar : RelativeLayout {
             mediaPlayer.prepareAsync()
             mediaPlayer.setOnPreparedListener {
                 showProgressBar(false)
+                songLoad = true
                 if (!mCancel) {
                     mCancel = false
                     logicPlay()
@@ -134,7 +141,9 @@ class MusicPlayerBar : RelativeLayout {
         btnPlay(true)
         mCancel = true
         seekBarDistance.isEnabled = false
-        mediaPlayer.pause()
+        if (mediaPlayer.isPlaying) {
+            mediaPlayer.pause()
+        }
     }
 
     private fun btnPlay(play: Boolean) {
