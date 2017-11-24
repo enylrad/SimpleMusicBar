@@ -97,18 +97,22 @@ class MusicPlayerBar : RelativeLayout {
 
     private fun loadSongAndPrepare(url: String) {
         try {
+
             showProgressBar(true)
-            mReset = false
+
             mediaPlayer.setDataSource(url)
             mediaPlayer.prepareAsync()
+            mReset = false
             mediaPlayer.setOnPreparedListener {
                 songLoad = true
-                showProgressBar(false)
                 mediaPlayer.seekTo(mPosition)
+                showProgressBar(false)
+
                 logicPlay()
             }
         } catch (e: Exception) {
             showProgressBar(false)
+
             logicPlay()
         }
     }
@@ -139,10 +143,10 @@ class MusicPlayerBar : RelativeLayout {
     fun stopMusic() {
         handlerMusic.removeCallbacks(notification)
         mReset = true
+        mPosition = mediaPlayer.currentPosition
         btnPlay(true)
         showProgressBar(false)
         seekBarDistance.isEnabled = false
-        mPosition = mediaPlayer.currentPosition
         mediaPlayer.reset()
     }
 
