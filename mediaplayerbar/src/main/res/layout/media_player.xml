@@ -1,0 +1,72 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+
+    <SeekBar
+        android:id="@+id/seekBarDistance"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="-16dp"
+        android:layout_toEndOf="@+id/btn_play_pause"
+        android:progressDrawable="@drawable/media_progress"
+        android:thumb="@drawable/media_thumb" />
+
+    <RelativeLayout
+        android:id="@+id/btn_play_pause"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@android:color/black"
+        android:padding="6dp">
+
+        <ImageView
+            android:id="@+id/img_play_pause"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:src="@android:drawable/ic_media_play"
+            tools:ignore="ContentDescription" />
+
+        <ProgressBar
+            android:id="@+id/progressbar_play"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerInParent="true"
+            android:theme="@style/WhiteProgressBar"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/song_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/btn_play_pause"
+        android:layout_toStartOf="@+id/time_song"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        tools:text="Song name" />
+
+
+    <TextView
+        android:id="@+id/time_song"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="30dp"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        tools:text="2:35" />
+
+</RelativeLayout>
