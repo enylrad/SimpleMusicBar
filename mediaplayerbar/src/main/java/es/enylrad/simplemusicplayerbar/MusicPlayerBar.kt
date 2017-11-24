@@ -22,8 +22,6 @@ class MusicPlayerBar : RelativeLayout {
 
     private val notification = Runnable { primarySeekBarProgressUpdater() }
 
-    private var songLoad = false
-
     private var mReset = true
 
     private var mPosition: Int = 0
@@ -87,7 +85,7 @@ class MusicPlayerBar : RelativeLayout {
     }
 
     private fun onClickPlayLogic(url: String) {
-        if (!songLoad || mReset) {
+        if (mReset) {
             loadSongAndPrepare(url)
         } else {
             logicPlay()
@@ -102,9 +100,8 @@ class MusicPlayerBar : RelativeLayout {
 
             mediaPlayer.setDataSource(url)
             mediaPlayer.prepareAsync()
-            mReset = false
             mediaPlayer.setOnPreparedListener {
-                songLoad = true
+                mReset = false
                 mediaPlayer.seekTo(mPosition)
                 showProgressBar(false)
 
@@ -143,11 +140,18 @@ class MusicPlayerBar : RelativeLayout {
     fun stopMusic() {
         handlerMusic.removeCallbacks(notification)
         mReset = true
-        mPosition = mediaPlayer.currentPosition
+        saveCurrentPosition()
         btnPlay(true)
         showProgressBar(false)
         seekBarDistance.isEnabled = false
         mediaPlayer.reset()
+    }
+
+    private fun saveCurrentPosition(){
+        val pos = mediaPlayer.currentPosition
+        if(pos != 0) {
+            mPosition = pos
+        }
     }
 
     private fun btnPlay(play: Boolean) {
