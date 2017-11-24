@@ -50,4 +50,5 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         stopMusic()
     }
+
 }
