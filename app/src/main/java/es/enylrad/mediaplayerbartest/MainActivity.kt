@@ -26,10 +26,14 @@ class MainActivity : AppCompatActivity() {
      * Create Simple Bar Song
      */
     private fun createMediaPlayerBar() {
-        val song = TrackSound(name = et_name.text.toString(), url = et_url.text.toString())
-        layout_test.addView(MusicPlayerBar(context = this, song = song) {
-            stopMusic(layout_test.indexOfChild(it)) //Stop others bar
-        })
+        val name = et_name.text.toString()
+        val url = et_url.text.toString()
+        if (url.isNotEmpty()) {
+            val song = TrackSound(name = name, url = url)
+            layout_test.addView(MusicPlayerBar(context = this, song = song) {
+                stopMusic(layout_test.indexOfChild(it)) //Stop others bar
+            })
+        }
     }
 
     /**
