@@ -4,7 +4,6 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.os.Handler
 import android.support.v4.content.ContextCompat
-import android.util.AttributeSet
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.SeekBar
@@ -14,54 +13,60 @@ import java.util.concurrent.TimeUnit
 
 class MusicPlayerBar : RelativeLayout {
 
-    private val mediaPlayer: MediaPlayer = MediaPlayer()
+    private val mMediaPlayer: MediaPlayer = MediaPlayer()
 
-    private var mediaFileLengthInMilliseconds: Int = 0
+    private var mMediaFileLengthInMilliseconds: Int = 0
 
-    private val handlerMusic: Handler = Handler()
+    private val mHandlerMusic: Handler = Handler()
 
-    private val notification = Runnable { primarySeekBarProgressUpdater() }
+    private val mRunnable: Runnable = Runnable { primarySeekBarProgressUpdater() }
 
-    private var mReset = true
+    private var mReset: Boolean = true
+
+    private var mPauseSong: Boolean = false
 
     private var mPosition: Int = 0
 
-    private var listener: ((MusicPlayerBar) -> Unit)? = null
+    private var mListener: ((MusicPlayerBar) -> Unit)? = null
 
-    constructor(context: Context) : super(context) {
-        init()
-    }
+    private var mSong: TrackSound? = null
 
     constructor(context: Context, song: TrackSound) : super(context) {
+        mSong = song
+
         init()
-        config(song)
+        config()
     }
 
     constructor(context: Context, song: TrackSound, listener: (MusicPlayerBar) -> Unit) : super(context) {
-        init()
-        this.listener = listener
-        config(song)
-    }
+        mSong = song
+        mListener = listener
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        init()
+        config()
     }
 
     private fun init() {
         inflate(context, R.layout.media_player, this)
     }
 
-    private fun config(song: TrackSound) {
+    private fun config() {
+        song_name.text = mSong?.name ?: ""
+        seek_bar_time.isEnabled = false
+
+        onClickBtnPlayPause()
+        onClickSeekBar()
+    }
+
+    private fun onClickBtnPlayPause() {
         btn_play_pause.setOnClickListener {
-            listener?.invoke(this@MusicPlayerBar)
-            onClickPlayLogic(song.url)
+            mListener?.invoke(this@MusicPlayerBar)
+            configSong()
         }
-        song_name.text = song.name
-        seekBarDistance.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    }
+
+    private fun onClickSeekBar() {
+        seek_bar_time.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, p1: Int, fromUser: Boolean) {
                 if (fromUser) {
                     onTouchSeekLogic(seekBar)
@@ -76,7 +81,6 @@ class MusicPlayerBar : RelativeLayout {
 
             }
         })
-        seekBarDistance.isEnabled = mediaPlayer.isPlaying
     }
 
     private fun showProgressBar(show: Boolean) {
@@ -84,77 +88,89 @@ class MusicPlayerBar : RelativeLayout {
         img_play_pause.visibility = if (show) View.GONE else View.VISIBLE
     }
 
-    private fun onClickPlayLogic(url: String) {
+    private fun configSong() {
         if (mReset) {
-            loadSongAndPrepare(url)
+            logicPrepareSong()
         } else {
-            logicPlay()
+            logicPlayPause()
         }
         logicSongCompleted()
     }
 
-    private fun loadSongAndPrepare(url: String) {
+    private fun logicPrepareSong() {
         try {
-
             showProgressBar(true)
 
-            mediaPlayer.setDataSource(url)
-            mediaPlayer.prepareAsync()
-            mediaPlayer.setOnPreparedListener {
+            mPauseSong = false
+            mMediaPlayer.setDataSource(mSong?.url ?: "")
+            mMediaPlayer.prepareAsync()
+            mMediaPlayer.setOnPreparedListener {
                 mReset = false
-                mediaPlayer.seekTo(mPosition)
+                mMediaPlayer.seekTo(mPosition)
                 showProgressBar(false)
 
-                logicPlay()
+                if(!mPauseSong) {
+                    logicPlayPause()
+                }
             }
         } catch (e: Exception) {
             showProgressBar(false)
 
-            logicPlay()
+            logicPlayPause()
         }
     }
 
-    private fun logicPlay() {
-        mediaFileLengthInMilliseconds = mediaPlayer.duration // gets the song length in milliseconds from URL
+    private fun logicPlayPause() {
+        mMediaFileLengthInMilliseconds = mMediaPlayer.duration
 
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
-            btnPlay(true)
+        if (mMediaPlayer.isPlaying) {
+            mMediaPlayer.pause()
+            setResourcePlayPause(true)
         } else {
-            mediaPlayer.start()
-            btnPlay(false)
+            mMediaPlayer.start()
+            setResourcePlayPause(false)
         }
-        seekBarDistance.isEnabled = mediaPlayer.isPlaying
+        seek_bar_time.isEnabled = mMediaPlayer.isPlaying
 
         primarySeekBarProgressUpdater()
     }
 
     private fun logicSongCompleted() {
-        mediaPlayer.setOnCompletionListener {
-            btnPlay(true)
-            mediaPlayer.seekTo(0)
-            setSeekAndTime()
+        mMediaPlayer.setOnCompletionListener {
+            setResourcePlayPause(true)
+            mMediaPlayer.seekTo(0)
+            setProgressAndTime()
         }
     }
 
     fun stopMusic() {
-        handlerMusic.removeCallbacks(notification)
+        mHandlerMusic.removeCallbacks(mRunnable)
         mReset = true
         saveCurrentPosition()
-        btnPlay(true)
+        setResourcePlayPause(true)
         showProgressBar(false)
-        seekBarDistance.isEnabled = false
-        mediaPlayer.reset()
+        seek_bar_time.isEnabled = false
+        mMediaPlayer.reset()
     }
 
-    private fun saveCurrentPosition(){
-        val pos = mediaPlayer.currentPosition
-        if(pos != 0) {
+    fun pauseMusic() {
+        mHandlerMusic.removeCallbacks(mRunnable)
+        setResourcePlayPause(true)
+        mPauseSong = true
+        seek_bar_time.isEnabled = false
+        if (mMediaPlayer.isPlaying) {
+            mMediaPlayer.pause()
+        }
+    }
+
+    private fun saveCurrentPosition() {
+        val pos = mMediaPlayer.currentPosition
+        if (pos != 0) {
             mPosition = pos
         }
     }
 
-    private fun btnPlay(play: Boolean) {
+    private fun setResourcePlayPause(play: Boolean) {
         if (play) {
             img_play_pause.setImageResource(android.R.drawable.ic_media_play)
             btn_play_pause.background = ContextCompat.getDrawable(context, android.R.color.black)
@@ -166,31 +182,31 @@ class MusicPlayerBar : RelativeLayout {
 
     private fun onTouchSeekLogic(seekBar: SeekBar?) {
         /** Seekbar onTouch event handler. Method which seeks MediaPlayer to seekBar primary progress position*/
-        if (mediaPlayer.isPlaying) {
+        if (mMediaPlayer.isPlaying) {
             val progress = seekBar?.progress ?: 0
-            val playPositionInMilliseconds = mediaFileLengthInMilliseconds / 100 * progress
-            mediaPlayer.seekTo(playPositionInMilliseconds)
+            val playPositionInMilliseconds = mMediaFileLengthInMilliseconds / 100 * progress
+            mMediaPlayer.seekTo(playPositionInMilliseconds)
         }
     }
 
     /** Method which updates the SeekBar primary progress by current song playing position */
     private fun primarySeekBarProgressUpdater() {
-        if (mediaPlayer.isPlaying) {
-            setSeekAndTime()
-            handlerMusic.postDelayed(notification, 1000)
+        if (mMediaPlayer.isPlaying) {
+            setProgressAndTime()
+            mHandlerMusic.postDelayed(mRunnable, 1000)
         }
 
     }
 
-    private fun setSeekAndTime() {
+    private fun setProgressAndTime() {
         val time = String.format("%d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(mediaFileLengthInMilliseconds - mediaPlayer.currentPosition.toLong()),
-                TimeUnit.MILLISECONDS.toSeconds(mediaFileLengthInMilliseconds - mediaPlayer.currentPosition.toLong()) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(mediaFileLengthInMilliseconds - mediaPlayer.currentPosition.toLong()))
+                TimeUnit.MILLISECONDS.toMinutes(mMediaFileLengthInMilliseconds - mMediaPlayer.currentPosition.toLong()),
+                TimeUnit.MILLISECONDS.toSeconds(mMediaFileLengthInMilliseconds - mMediaPlayer.currentPosition.toLong()) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(mMediaFileLengthInMilliseconds - mMediaPlayer.currentPosition.toLong()))
         )
 
         time_song.text = time
-        seekBarDistance.progress = (mediaPlayer.currentPosition.toFloat() / mediaFileLengthInMilliseconds * 100).toInt()
+        seek_bar_time.progress = (mMediaPlayer.currentPosition.toFloat() / mMediaFileLengthInMilliseconds * 100).toInt()
     }
 
     companion object {
