@@ -2,4 +2,5 @@
 <resources>
     <color name="grey_dark">#9D9FA2</color>
     <color name="grey">#d4d4d4</color>
+    <color name="black_buffer">#212121</color>
 </resources>

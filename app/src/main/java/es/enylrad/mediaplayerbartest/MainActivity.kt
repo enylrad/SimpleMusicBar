@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         val url = et_url.text.toString()
         if (url.isNotEmpty()) {
             val song = TrackSound(name = name, url = url)
-            layout_test.addView(MusicPlayerBar(context = this, song = song) {
+            layout_test.addView(MusicPlayerBar(this).config(song) {
                 pauseSongs(layout_test.indexOfChild(it)) //Stop others bar
             })
         }
@@ -46,14 +46,14 @@ class MainActivity : AppCompatActivity() {
                 .forEach { (layout_test.getChildAt(it) as MusicPlayerBar).pauseMusic() }
     }
 
-    private fun stopSongs(){
+    private fun resetSongs() {
         (0 until layout_test.childCount)
-                .forEach { (layout_test.getChildAt(it) as MusicPlayerBar).stopMusic() }
+                .forEach { (layout_test.getChildAt(it) as MusicPlayerBar).resetMusic() }
     }
 
     override fun onPause() {
         super.onPause()
-        stopSongs()
+        resetSongs()
     }
 
 }
