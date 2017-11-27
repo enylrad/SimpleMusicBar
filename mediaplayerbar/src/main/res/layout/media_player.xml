@@ -13,6 +13,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginStart="-16dp"
+        android:layout_marginEnd="-16dp"
         android:layout_toEndOf="@+id/btn_play_pause"
         android:progressDrawable="@drawable/media_progress"
         android:thumb="@drawable/media_thumb" />
