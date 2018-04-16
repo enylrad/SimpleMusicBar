@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 
 class MusicPlayerBar : RelativeLayout {
 
-    private val mMediaPlayer: MediaPlayer = MediaPlayer()
+    val mMediaPlayer: MediaPlayer = MediaPlayer()
 
     private var mMediaFileLengthInMilliseconds: Int = 0
 
@@ -51,7 +51,6 @@ class MusicPlayerBar : RelativeLayout {
     fun config(song: TrackSound, listener: ((MusicPlayerBar) -> Unit)? = null): MusicPlayerBar {
         mSong = song
         mListener = listener
-
         setTextSong(mSong?.name ?: "")
         seekBarIsEnabled(false)
 
